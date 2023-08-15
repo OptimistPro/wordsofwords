@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
+<head>
+	<meta charset='utf-8' />
+	<meta name='viewport' content='width=device-width, user-scalable=no' />
+	<title>world of words web</title>
+	<style type='text/css'>
+
+		body {
+			touch-action: none;
+			margin: 0;
+			border: 0 none;
+			padding: 0;
+			text-align: center;
+			background-color: black;
+		}
+
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+
+		#canvas:focus {
+			outline: none;
+		}
+
+		.godot {
+			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+			color: #e0e0e0;
+			background-color: #3b3943;
+			background-image: linear-gradient(to bottom, #403e48, #35333c);
+			border: 1px solid #45434e;
+			box-shadow: 0 0 1px 1px #2f2d35;
+		}
+
+
+		/* Status display
+		 * ============== */
+
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			/* don't consume click events - make children visible explicitly */
+			visibility: hidden;
+		}
+
+		#status-progress {
+			width: 366px;
+			height: 7px;
+			background-color: #38363A;
+			border: 1px solid #444246;
+			padding: 1px;
+			box-shadow: 0 0 2px 1px #1B1C22;
+			border-radius: 2px;
+			visibility: visible;
+		}
+
+		@media only screen and (orientation:portrait) {
+			#status-progress {
+				width: 61.8%;
+			}
+		}
+
+		#status-progress-inner {
+			height: 100%;
+			width: 0;
+			box-sizing: border-box;
+			transition: width 0.5s linear;
+			background-color: #202020;
+			border: 1px solid #222223;
+			box-shadow: 0 0 1px 1px #27282E;
+			border-radius: 3px;
+		}
+
+		#status-indeterminate {
+			visibility: visible;
+			position: relative;
+		}
+
+		#status-indeterminate > div {
+			width: 4.5px;
+			height: 0;
+			border-style: solid;
+			border-width: 9px 3px 0 3px;
+			border-color: #2b2b2b transparent transparent transparent;
+			transform-origin: center 21px;
+			position: absolute;
+		}
+
+		#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
+		#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
+		#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
+		#status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
+		#status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
+		#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
+		#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
+		#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
+
+		#status-notice {
+			margin: 0 100px;
+			line-height: 1.3;
+			visibility: visible;
+			padding: 4px 6px;
+			visibility: visible;
+		}
+	</style>
+<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
+<link rel='apple-touch-icon' href='index.apple-touch-icon.png'/>
+<style type='text/css'>
+html { overflow-x: hidden; overflow-y: hidden; }
+
+.tt {
+    width: 550px;
+    height: 120px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -150px 0 0 -275px;
+}
+
+body {
+			touch-action: none;
+			margin: 0;
+			border: 0 none;
+			padding: 0;
+			text-align: center;
+			background-color: #c6daf4;
+		}
+
+#status-progress {
+	width: 366px;
+	height: 16px;
+	background-color: b0caea;
+	border: 1px solid b0caea;
+	padding: 1px;
+	box-shadow: 0 0 2px 1px #1B1C22;
+	border-radius: 8px;
+	visibility: visible;
+}
+
+#status-progress-inner {
+	height: 100%;
+	width: 0;
+	box-sizing: border-box;
+	transition: width 0.5s linear;
+	background-color: #9ff29f;
+	border: 1px solid #9ff29f;
+	box-shadow: 0 0 1px 1px #27282E;
+	border-radius: 8px;
+}
+</style>
+
+<!-- SDK -->
+	<script type="text/javascript" src="//vkplay.ru/app/[GMRID]/static/mailru.core.js"></script>
+
+
+
+<script>
+var stop_sounds = false;
+var intest=false;
+ var externalApi = null;
+    (function apiHandshake(iframeApi) {
+        if (typeof iframeApi === 'undefined') {
+            console.log('Cannot find iframeApi function, are we inside an iframe?');
+            return;
+        }
+
+       
+
+        var callbacks = {
+            appid: [GMRID],
+
+            getLoginStatusCallback: function(status) {},
+            userInfoCallback: function(info) {},
+            userProfileCallback: function(profile) {},
+            registerUserCallback: function(info) {},
+            paymentFrameUrlCallback: function(url) {},
+            getAuthTokenCallback: function(token) {},
+            paymentReceivedCallback: function(data) {},
+            paymentWindowClosedCallback: function() {},
+            userConfirmCallback: function() {},
+            paymentFrameItem: function(object) {},
+            getGameInventoryItems: function() {},
+			adsCallback: function(context) {
+			
+			if(window.intest){
+			
+			window.intest=false;
+			
+			if (context.type==="adCompleted"){
+				Howler.mute(false);
+				window.stop_sounds = false;
+			}
+			if (context.type==="adDismissed"){
+				Howler.mute(false);
+				window.stop_sounds = false;
+			}
+			if (context.type==="adError"){
+				Howler.mute(false);
+				window.stop_sounds = false;
+			}
+			
+			}else{
+				if (context.type==="adCompleted"){
+					VideoRewarded();
+					Howler.mute(false);
+					stop_sounds = false;
+         			VideoClose();
+				}
+				if (context.type==="adDismissed"){
+					Howler.mute(false);
+					stop_sounds = false;
+          			VideoClose();
+				}
+				if (context.type==="adError"){
+					Howler.mute(false);
+					stop_sounds = false;
+					VideoErrol();
+          			VideoClose();
+				}
+			}
+			
+			console.log(context);
+			
+			}
+        };
+
+        function error(err) {
+            throw new Error('Could not init external api ' + err);
+        }
+
+        function connected(api) {
+            window.externalApi = api;
+        }
+
+        iframeApi(callbacks).then(connected, error);
+    }(window.iframeApi));
+	
+	
+	function ShowAd() {
+		Howler.mute(true);
+		window.stop_sounds = true;
+		window.intest=true;
+		var config =
+  		{
+     	 interstitial: true
+  		}
+		console.log('1');
+		window.externalApi.showAds(config);
+		console.log('2');
+	}
+	
+	
+	
+	function ShowAdVideo() {
+		window.intest=false;
+		Howler.mute(true);
+		stop_sounds = true;
+        VideoOpen();
+		var config =
+  		{
+     	 interstitial: false
+  		}
+		console.log('3');
+		window.externalApi.showAds(config);
+		console.log('4');
+	}
+	
+	
+function VideoOpen(callback) {
+    callback("gf");
+}
+function VideoClose(callback) {
+    callback("gf");
+}
+function VideoErrol(callback) {
+    callback("gf");
+}
+function VideoRewarded(callback) {
+    callback("gf");
+}
+	
+	
+</script>
+
+<script type="text/javascript">
+	    document.addEventListener('DOMContentLoaded', function() {
+	        var videoElement = document.getElementById('videoElement');
+	        // отслеживаем активность вкладки браузера
+	        document.addEventListener('visibilitychange', function() {
+	            if (document.hidden) { // ставим музыку на паузу
+	               if (!window.stop_sounds){
+				 Howler.mute(true);
+					}
+	            } else { // продолжаем воспроизведение
+				 if (!window.stop_sounds){
+	                Howler.mute(false);
+					}
+	            }
+	        });
+	    });
+	    </script>
+		<script type='text/javascript' src='howler.core.js'></script>
+		<script type='text/javascript'>
+		
+		var audio_list = [];
+			var Redering = { 
+				Functions: []
+			}
+		function new_audio(path,loop) {
+		
+		function AL(callback) {  
+		callback("gf");
+			}
+		Redering.Functions.push(AL);
+		
+  			var sound = new Howl({src: [path], loop: loop});
+			var h = audio_list.length;
+			sound.on('end', function(t=1,t2=h){
+  				//for (var i = 0;i<window.Redering.Functions.length;i++){
+			//	window.Redering.Functions[i](t2);
+		//	}
+				});
+			audio_list.push(sound);
+			return audio_list.length-1;
+		}
+		
+		function update_audio(path,loop,id) {
+  			var sound = new Howl({src: [path], loop: loop});
+			sound.on('end', function(t=1,t2=id){
+  				for (var i = 0;i<window.Redering.Functions.length;i++){
+				window.Redering.Functions[i](t2);
+			}
+				});
+			audio_list[id]=sound;
+		}
+		function GedAudio(callback) {
+   			 callback("gf");
+		}
+		
+		</script>
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript" >
+   (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+   m[i].l=1*new Date();
+   for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+   (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+   ym(90907183, "init", {
+        clickmap:true,
+        trackLinks:true,
+        accurateTrackBounce:true
+   });
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/90907183" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+
+<div class="tt">
+	   <img src="fon_load.gif" width="120" height="120">
+	 </div>
+</head>
+<body>
+	<canvas id='canvas'>
+		HTML5 canvas appears to be unsupported in the current browser.<br />
+		Please try updating or use a different browser.
+	</canvas>
+	<div id='status'>
+		<div id='status-progress' style='display: none;' oncontextmenu='event.preventDefault();'><div id ='status-progress-inner'></div></div>
+		<div id='status-indeterminate' style='display: none;' oncontextmenu='event.preventDefault();'>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+		</div>
+		<div id='status-notice' class='godot' style='display: none;'></div>
+	</div>
+
+	<script type='text/javascript' src='index.js'></script>
+	<script type='text/javascript'>//<![CDATA[
+
+		const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1568912,"index.wasm":9720534},"focusCanvas":true,"gdnativeLibs":[]};
+		var engine = new Engine(GODOT_CONFIG);
+
+		(function() {
+			const INDETERMINATE_STATUS_STEP_MS = 100;
+			var statusProgress = document.getElementById('status-progress');
+			var statusProgressInner = document.getElementById('status-progress-inner');
+			var statusIndeterminate = document.getElementById('status-indeterminate');
+			var statusNotice = document.getElementById('status-notice');
+
+			var initializing = true;
+			var statusMode = 'hidden';
+
+			var animationCallbacks = [];
+			function animate(time) {
+				animationCallbacks.forEach(callback => callback(time));
+				requestAnimationFrame(animate);
+			}
+			requestAnimationFrame(animate);
+
+			function setStatusMode(mode) {
+
+				if (statusMode === mode || !initializing)
+					return;
+				[statusProgress, statusIndeterminate, statusNotice].forEach(elem => {
+					elem.style.display = 'none';
+				});
+				animationCallbacks = animationCallbacks.filter(function(value) {
+					return (value != animateStatusIndeterminate);
+				});
+				switch (mode) {
+					case 'progress':
+						statusProgress.style.display = 'block';
+						break;
+					case 'indeterminate':
+						statusIndeterminate.style.display = 'block';
+						animationCallbacks.push(animateStatusIndeterminate);
+						break;
+					case 'notice':
+						statusNotice.style.display = 'block';
+						break;
+					case 'hidden':
+						break;
+					default:
+						throw new Error('Invalid status mode');
+				}
+				statusMode = mode;
+			}
+
+			function animateStatusIndeterminate(ms) {
+				var i = Math.floor(ms / INDETERMINATE_STATUS_STEP_MS % 8);
+				if (statusIndeterminate.children[i].style.borderTopColor == '') {
+					Array.prototype.slice.call(statusIndeterminate.children).forEach(child => {
+						child.style.borderTopColor = '';
+					});
+					statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+				}
+			}
+
+			function setStatusNotice(text) {
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				var lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			};
+
+			function displayFailureNotice(err) {
+				var msg = err.message || err;
+				console.error(msg);
+				setStatusNotice(msg);
+				setStatusMode('notice');
+				initializing = false;
+			};
+
+			if (!Engine.isWebGLAvailable()) {
+				displayFailureNotice('WebGL not available');
+			} else {
+				setStatusMode('indeterminate');
+				engine.startGame({
+					'onProgress': function (current, total) {
+						if (total > 0) {
+							statusProgressInner.style.width = current/total * 100 + '%';
+							setStatusMode('progress');
+							if (current === total) {
+								// wait for progress bar animation
+								setTimeout(() => {
+									setStatusMode('indeterminate');
+								}, 500);
+							}
+						} else {
+							setStatusMode('indeterminate');
+						}
+					},
+				}).then(() => {
+					setStatusMode('hidden');
+					initializing = false;
+				}, displayFailureNotice);
+			}
+		})();
+	//]]></script>
+</body>
+</html>
+
